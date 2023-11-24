@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Splash Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        form {
+            display: inline-block;
+            text-align: left;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label,
+        input {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+        #centered {
+            text-align: center;
+            font-family: cursive;
+            color: green;
+            margin-bottom: 2%;
+            margin-top: 1%;
+        }
+
+        #questionContainer {
+            text-align: left;
+            margin-left: 1%;
+            font-size: larger;
+        }
+        #TotalMarks {
+            font-weight: bold;
+            margin-bottom: 3%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form id="questionForm" onsubmit="submitForm(event)">
+        <h1>Question Paper Generator</h1>
+        <label for="totalMarks">Total Marks:</label>
+        <input type="text" id="totalMarks" name="totalMarks" min="1" required><br>
+
+        <label for="difficulty">Difficulty Label:(Easy)</label>
+        <input type="number" id="difficultyEasy" name="difficultyEasy" required><br>
+
+        <label for="difficulty">Difficulty Label(Medium):</label>
+        <input type="number" id="difficultyMedium" name="difficultyMedium" required><br>
+
+        <label for="difficulty">Difficulty Label(Hard):</label>
+        <input type="number" id="difficultyHard" name="difficultyHard" required><br>
+
+        <input type="submit" value="Generate Question Paper">
+    </form>
+    <div id="centered">
+    </div>
+    <div id="TotalMarks">
+
+    </div>
+    <div id="questionContainer"></div>
+
+    <script>
+        let questionIdx = 1;
+        class Question {
+            constructor(question, subject, topic, difficulty, marks) {
+                this.question = question;
+                this.subject = subject;
+                this.topic = topic;
+                this.difficulty = difficulty;
+                this.marks = marks;
+            }
+        }
+
+        class QuestionStore {
+            constructor() {
+                this.questions = [];
+            }
+
+            addQuestion(question) {
+                this.questions.push(question);
+
+            }
+
+            getQuestionsByDifficulty(difficulty) {
+                return this.questions.filter(q => q.difficulty === difficulty);
+            }
+        }
+
+        class QuestionPaperGenerator {
+            constructor(questionStore) {
+                this.questionStore = questionStore;
+            }
+
+            generatePaper(totalMarks, difficultyDistribution) {
+                const questionPaper = [];
+                let remainingMarks = totalMarks;
+                let currentTotalMarks = 0;
+
+                for (const [difficulty, percentage] of Object.entries(difficultyDistribution)) {
+                    let marksForDifficulty = Math.floor(totalMarks * percentage);
+                    remainingMarks -= marksForDifficulty;
+
+                    const questions = this.questionStore.getQuestionsByDifficulty(difficulty);
+                    const totalQuestions = questions.length;
+
+                    if (totalQuestions > 0) {
+                        const selectedQuestions = questions.slice(0, Math.min(marksForDifficulty, totalQuestions));
+                        selectedQuestions.forEach(question => {
+                            if (currentTotalMarks + question.marks <= totalMarks && marksForDifficulty != 0) {
+                                questionPaper.push(question);
+                                marksForDifficulty -= question.marks;
+                                currentTotalMarks += question.marks;
+                            }
+
+                        });
+                    }
+                    if (currentTotalMarks === totalMarks) {
+                        break;
+                    }
+
+                }
+                if (remainingMarks > 0) {
+                    const allQuestions = this.questionStore.questions;
+                    const remainingQuestions = allQuestions.slice(0, Math.min(remainingMarks, allQuestions.length));
+                    questionPaper.push(...remainingQuestions);
+                }
+
+
+
+                return questionPaper;
+            }
+        }
+        const questionStore = new QuestionStore();
+
+
+        // Add questions to the question store
+        questionStore.addQuestion(new Question("What is the speed of light?", "Physics", "Waves", "Easy", 5));
+        // Add more questions as needed
+        questionStore.addQuestion(new Question("What is the scotch defense?", "chess", "opening", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the speed of dhumkatu?", "Physics", "Waves", "Medium", 5));
+        questionStore.addQuestion(new Question("Who discovered gravity?", "Physics", "Gravity", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the boiling point of water?", "Chemistry", "States of Matter", "Medium", 10));
+        questionStore.addQuestion(new Question("Solve: 3x + 7 = 22", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who painted the Sistine Chapel ceiling?", "Art", "Renaissance Art", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the formula for calculating density?", "Science", "Physics", "Easy", 5));
+        questionStore.addQuestion(new Question("Who invented the telephone?", "History", "Inventions", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical symbol for gold?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the largest planet in our solar system?", "Science", "Astronomy", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 4x - 7 = 25", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who painted the 'Starry Night'?", "Art", "Impressionism", "Medium", 5));
+        questionStore.addQuestion(new Question("What is the capital of Japan?", "Geography", "World Capitals", "Easy", 5));
+        questionStore.addQuestion(new Question("Who wrote 'To Kill a Mockingbird'?", "Literature", "Modern Classics", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical formula for water?", "Chemistry", "Chemical Compounds", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 3x^2 + 2x - 7 = 0", "Mathematics", "Quadratic Equations", "Hard", 15));
+        questionStore.addQuestion(new Question("Who created the theory of relativity?", "Physics", "Quantum Physics", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the process of converting light energy into chemical energy in plants called?", "Biology", "Photosynthesis", "Easy", 5));
+        questionStore.addQuestion(new Question("Who is known as the 'Father of Computing'?", "Technology", "Computer Science", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the atomic number of carbon?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the largest mammal in the world?", "Biology", "Marine Biology", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 2y + 9 = 25", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who painted the 'Mona Lisa'?", "Art", "Renaissance Art", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the formula for calculating the area of a triangle?", "Mathematics", "Geometry", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the largest organ in the human body?", "Biology", "Anatomy", "Easy", 5));
+        questionStore.addQuestion(new Question("Who composed the 'Moonlight Sonata'?", "Music", "Classical Music", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical symbol for iron?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 4y - 3 = 9", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who wrote '1984'?", "Literature", "Dystopian Fiction", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the SI unit of electric current?", "Physics", "Electromagnetism", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the powerhouse of the cell?", "Biology", "Cell Biology", "Easy", 5));
+        questionStore.addQuestion(new Question("Who painted 'The Persistence of Memory'?", "Art", "Surrealism", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical symbol for sodium?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 5z + 8 = 33", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who is the author of 'Pride and Prejudice'?", "Literature", "Classic Literature", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the Earth's primary source of energy?", "Science", "Environmental Science", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the national flower of Japan?", "Geography", "Flora", "Easy", 5));
+        questionStore.addQuestion(new Question("Who sculpted 'David'?", "Art", "Renaissance Art", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical symbol for silver?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 6a - 2 = 16", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who is the protagonist in 'The Great Gatsby'?", "Literature", "American Literature", "Medium", 10));
+        questionStore.addQuestion(new Question("What gas do plants absorb for photosynthesis?", "Biology", "Botany", "Easy", 5));
+        questionStore.addQuestion(new Question("Who wrote 'Hamlet'?", "Literature", "Shakespeare", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical symbol for oxygen?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the largest planet in our solar system?", "Science", "Astronomy", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 7x + 12 = 33", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who painted 'The Starry Night'?", "Art", "Post-Impressionism", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the SI unit of force?", "Physics", "Mechanics", "Easy", 5));
+        questionStore.addQuestion(new Question("Who wrote 'Hamlet'?", "Literature", "Shakespeare", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical symbol for oxygen?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the largest planet in our solar system?", "Science", "Astronomy", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 7x + 12 = 33", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who painted 'The Starry Night'?", "Art", "Post-Impressionism", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the SI unit of force?", "Physics", "Mechanics", "Easy", 5));
+        questionStore.addQuestion(new Question("What is the scientific name for the human tailbone?", "Biology", "Anatomy", "Easy", 5));
+        questionStore.addQuestion(new Question("Who painted 'The Last Supper'?", "Art", "Renaissance Art", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the chemical symbol for nitrogen?", "Chemistry", "Elements", "Easy", 5));
+        questionStore.addQuestion(new Question("Solve: 10z - 7 = 23", "Mathematics", "Algebra", "Hard", 15));
+        questionStore.addQuestion(new Question("Who is the author of 'The Old Man and the Sea'?", "Literature", "Classics", "Medium", 10));
+        questionStore.addQuestion(new Question("What is the primary component of Earth's atmosphere?", "Science", "Atmospheric Science", "Easy", 5));
+        const generator = new QuestionPaperGenerator(questionStore);
+
+
+        function submitForm(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('questionForm');
+            const totalMarksInput = form.elements['totalMarks'].value;
+            const difficultyEasyInput = form.elements['difficultyEasy'].value / 100;
+            const difficultyMediumInput = form.elements['difficultyMedium'].value / 100;
+            const difficultyHardInput = form.elements['difficultyHard'].value / 100;
+
+            const difficultyDistribution = {
+                "Easy": difficultyEasyInput,
+                "Medium": difficultyMediumInput,
+                "Hard": difficultyHardInput
+            };
+            // Use 'totalMarks' and 'difficulty' as needed (e.g., pass them to the function)
+            if (totalMarksInput > 100 || (difficultyEasyInput + difficultyMediumInput + difficultyHardInput) != 1) {
+                alert("marks of total question paper does not exceed 100 and the total persentage should be 100");
+            }
+            else {
+                const TotalMarks = document.getElementById("TotalMarks");
+                const generatedPaper = generator.generatePaper(totalMarksInput, difficultyDistribution);
+                document.getElementById("questionForm").remove();
+                const centered = document.getElementById("centered");
+                const headingText = document.createElement("h1");
+                headingText.textContent = "Question Paper"
+                TotalMarks.innerText = ` Total Marks : ${totalMarksInput}`
+                centered.appendChild(headingText)
+                generatedPaper.forEach(question => {
+                    console.log(`Question: ${question.question}, Difficulty: ${question.difficulty}, Marks: ${question.marks}`);
+                    const questionDiv = document.createElement("div");
+                    questionDiv.classList.add("question");
+
+                    const questionText = document.createElement("p");
+                    questionText.textContent = `Question${questionIdx++}: ${question.question}, [${question.subject},${question.topic} ,Difficulty: ${question.difficulty}, Marks: ${question.marks}]`;
+
+                    questionDiv.appendChild(questionText);
+                    questionContainer.appendChild(questionDiv);
+                });
+            }
+
+        }
+
+
+
+
+    </script>
+
+</body>
+
+</html>
